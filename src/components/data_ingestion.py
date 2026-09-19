@@ -1,0 +1,70 @@
+import os
+import sys
+from src.exception import CustomException
+from src.logger import logging
+import pandas as pd
+
+from sklearn.model_selection import train_test_split
+from dataclasses import dataclass
+
+#from src.components.data_transformation import DataTransformation
+#from src.components.data_transformation import DataTransformationConfig
+
+#from src.components.model_trainer import ModelTrainerConfig
+#from src.components.model_trainer import ModelTrainer
+
+@dataclass
+class DataIngestionConfig:
+    train_data_path: str=os.path.join('artifacts',"train.csv")
+    test_data_path: str=os.path.join('artifacts',"test.csv")
+    raw_data_path: str=os.path.join('artifacts',"data.csv")
+
+class DataIngestion:
+    def __init__(self):
+        self.ingestion_config=DataIngestionConfig()
+
+    def initiate_data_ingestion(self):
+        logging.info("Entered the data ingestion method or component")
+        try:
+            df=pd.read_csv('notebook/data/stud.csv')
+            logging.info('Read the dataset as dataframe')
+
+            os.makedirs(os.path.dirname(self.ingestion_config.train_data_path),exist_ok=True)   #os.makedirs = اتاق را آماده می‌کند (پوشه را می‌سازد).
+            df.to_csv(self.ingestion_config.raw_data_path,index=False,header=True)      #df.to_csv = وسایل را داخل اتاق می‌چیند (فایل را ذخیره می‌کند).
+
+            logging.info("Train test split initiated")
+
+            #این دو خط کد تفاوت بسیار مهمی با هم دارند؛ یکی کارش تقسیم کردن داده‌ها است و دیگری کارش ذخیره کردن فایل روی هارد دیسک.
+            train_set,test_set=train_test_split(df,test_size=0.2,random_state=42)
+
+            train_set.to_csv(self.ingestion_config.train_data_path,index=False,header=True)
+
+            test_set.to_csv(self.ingestion_config.test_data_path,index=False,header=True)
+
+            logging.info("Inmgestion of the data iss completed")
+
+            return(
+                self.ingestion_config.train_data_path,
+                self.ingestion_config.test_data_path
+
+            )
+        except Exception as e:
+            raise CustomException(e,sys)
+
+
+
+            """""CustomException: یک کلاس خطای سفارشی (Custom) است که خودتان (یا در ساختار پروژه‌های استاندارد) آن را نوشته‌اید. کارش این است که به جای ارورهای پیش‌فرض و شلوغ پایتون، خطا را با فرمت خودتان نشان دهد.
+
+e: خودِ خطایی که رخ داده را به کلاس می‌فرستد تا بداند مشکل چه بوده است.
+
+sys: ماژول سیستمی پایتون (sys) است که اطلاعات بسیار دقیقی مثل شماره دقیق خطی از کد که در آن ارور رخ داده است و نام فایل را استخراج می‌کند و به کلاس می‌دهد"""
+        
+if __name__=="__main__":
+    obj=DataIngestion()
+    train_data,test_data=obj.initiate_data_ingestion()
+
+   # data_transformation=DataTransformation()
+    #train_arr,test_arr,_=data_transformation.initiate_data_transformation(train_data,test_data)
+
+   # modeltrainer=ModelTrainer()
+    #print(modeltrainer.initiate_model_trainer(train_arr,test_arr))
